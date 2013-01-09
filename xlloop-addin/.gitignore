@@ -1,2 +1,8 @@
-/XLLoop.ncb
-/XLLoop.suo
+/_ReSharper*
+*.aps
+*.ncb
+*.user
+*.suo
+*.sdf
+*.opensdf
+ipch/

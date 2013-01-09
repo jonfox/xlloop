@@ -196,7 +196,7 @@ void RegisterFunctions(LPXLOPER xDLL, int index)
 					argHelp[argHelpCount++] = "";
 				}
 				int size = 10 + argHelpCount;
-				static LPXLOPER input[20];
+				LPXLOPER input[30];
 				input[0] = (LPXLOPER FAR) xDLL;
 				input[1] = (LPXLOPER FAR) XLUtil::MakeExcelString2(tmp);
 				input[2] = (LPXLOPER FAR) XLUtil::MakeExcelString2(isVolatile ? "RPPPPPPPPPPPPPPPPPPPP!" : "RPPPPPPPPPPPPPPPPPPPP");

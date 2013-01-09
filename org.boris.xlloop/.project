@@ -3,6 +3,8 @@
 	<name>org.boris.xlloop</name>
 	<comment></comment>
 	<projects>
+		<project>org.boris.expr</project>
+		<project>org.boris.jxll</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
