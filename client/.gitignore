@@ -1,0 +1,10 @@
+Debug/
+Release/
+*.aps
+*.ncb
+*.user
+*.suo
+*.sdf
+*.opensdf
+ipch/
+/_ReSharper*

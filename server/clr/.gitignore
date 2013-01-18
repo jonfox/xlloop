@@ -1,0 +1,11 @@
+bin
+obj
+packages/
+.nuget/
+*.aps
+*.ncb
+*.user
+*.suo
+*.sdf
+*.opensdf
+/_ReSharper*
