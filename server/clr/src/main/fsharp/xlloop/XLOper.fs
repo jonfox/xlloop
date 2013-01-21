@@ -128,48 +128,83 @@ module XLOperOps =
 
 
     // XLOper -> obj
+    open Types
+
+    let emptyType (hint: Type) =
+        match hint.FullName with
+        | "System.Int32" -> box 0
+        | "System.Int64" -> box 0L
+        | "System.Double" -> box 0.0
+        | "System.Boolean" -> box false
+        | "System.String" -> box ""
+        | _ -> null
+
+    let fromXLOperToBool (op: XLOper): bool =
+        match op with
+        | XLBool(b) -> b
+        | XLInt(i) -> not(i = 0)
+        | XLNum(d) -> not(d = 0.0)
+        | _ -> failwith "Can only convert numeric types to bool"
+
+    let fromXLOperToInt (op: XLOper): int =
+        match op with
+        | XLBool(b) -> if b then 1 else 0
+        | XLInt(i) -> i
+        | XLNum(d) -> int(d)
+        | _ -> failwith "Can only convert numeric types to int"
+
+    let fromXLOperToInt64 (op: XLOper): int64 =
+        match op with
+        | XLBool(b) -> if b then 1L else 0L
+        | XLInt(i) -> int64(i)
+        | XLNum(d) -> int64(d)
+        | _ -> failwith "Can only convert numeric types to int64"
+
+    let fromXLOperToDouble (op: XLOper): double =
+        match op with
+        | XLBool(b) -> if b then 1.0 else 0.0
+        | XLInt(i) -> double(i)
+        | XLNum(d) -> d
+        | _ -> failwith "Can only convert numeric types to double"
+
     let xlArrayToArray2D (xlArray: XLArrayType) =
         array2D [ for i in 0 .. xlArray.Rows - 1 -> [ for j in 0 .. xlArray.Columns - 1 -> xlArray.Data.[i * xlArray.Columns + j] ] ]
 
-    open Types
+    let array2DToObj (isVector: bool)(collectionType: CollectionType)(arr: 'a[,]) =
+        match collectionType with
+        | Array1D -> arr |> Array.flatten :> obj
+        | Array2D -> arr :> obj
+        | Array2DJagged -> arr |> Array.array2DToJagged :> obj
+        | FSharpList -> arr |> Array.flatten |> List.ofArray :> obj
+        | Unknown -> if isVector then arr |> Array.flatten :> obj else arr :> obj
 
     let rec fromXLOperBase (hint: Type)(op: XLOper) =
         if hint = typeof<XLOper> then
             op :> obj
         else
-            let emptyType = lazy (
-                match hint.FullName with
-                | "System.Int32" -> box 0
-                | "System.Int64" -> box 0L
-                | "System.Double" -> box 0.0
-                | "System.Boolean" -> box false
-                | "System.String" -> box ""
-                | _ -> null
-                )
-
             match op with
-            | XLNil -> emptyType.Value
-            | XLMissing -> emptyType.Value
+            | XLNil -> emptyType hint
+            | XLMissing -> emptyType hint
             | XLError(_) -> null
             | XLSRef(_) -> null
             | XLString(s) -> box s
             | XLBool(b) ->
                 match hint.FullName with
-                | "System.Int32" -> box(if b then 1 else 0)
-                | "System.Int64" -> box(if b then 1L else 0L)
+                | "System.Int32"  -> box (if b then 1 else 0)
+                | "System.Int64"  -> box (if b then 1L else 0L)
                 | "System.Double" -> box(if b then 1.0 else 0.0)
                 | _ -> box b
-            | XLInt(i) ->
+            | XLInt(i) -> 
                 match hint.FullName with
-                | "System.Int64" -> box(int64(i))
-                | "System.Double" -> box(double(i))
                 | "System.Boolean" -> box(not(i = 0))
+                | "System.Int64"   -> box(int64(i))
+                | "System.Double"  -> box(double(i))
                 | _ -> box i
             | XLNum(d) ->
                 match hint.FullName with
-                | "System.Int32" -> box(int(d))
-                | "System.Int64" -> box(int64(d))
                 | "System.Boolean" -> box(not(d = 0.0))
+                | "System.Int32"   -> box(int(d))
+                | "System.Int64"   -> box(int64(d))
                 | _ -> box d
             | XLArray(arr) ->
                 if arr.Rows = 0 || arr.Columns = 0 then
@@ -177,13 +212,13 @@ module XLOperOps =
                 else
                     let isVector = arr.Rows = 1 || arr.Columns = 1
                     let (collectionType, elementType) = Types.decomposeCollectionType hint
-                    let nativeArray = xlArrayToArray2D arr |> Array2D.map (fun el -> fromXLOperBase elementType el)
-                    match collectionType with
-                    | Array1D -> nativeArray |> Array.flatten :> obj
-                    | Array2D -> nativeArray :> obj
-                    | Array2DJagged -> nativeArray |> Array.array2DToJagged :> obj
-                    | FSharpList -> nativeArray |> Array.flatten |> List.ofArray :> obj
-                    | Unknown -> if isVector then nativeArray |> Array.flatten :> obj else nativeArray :> obj
+                    let nativeArray = xlArrayToArray2D arr 
+                    match elementType.FullName with
+                    | "System.Boolean" -> nativeArray |> Array2D.map (fun el -> fromXLOperToBool el) |> array2DToObj isVector collectionType
+                    | "System.Int32"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt el) |> array2DToObj isVector collectionType
+                    | "System.Int64"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt64 el) |> array2DToObj isVector collectionType
+                    | "System.Double"  -> nativeArray |> Array2D.map (fun el -> fromXLOperToDouble el) |> array2DToObj isVector collectionType
+                    | _                -> nativeArray |> Array2D.map (fun el -> fromXLOperBase elementType el) |> array2DToObj isVector collectionType
                        
     let fromXLOper (hint: Type)(op: XLOper) =
         let wrappedOp =

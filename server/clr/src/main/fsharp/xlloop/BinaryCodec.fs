@@ -74,6 +74,10 @@ type BinaryRequestProtocol(client: TcpClient) =
     let close() =
         try
             stream.Close()
+        with
+        | _ -> ()
+
+        try
             client.Close()
         with
             | _ -> ()

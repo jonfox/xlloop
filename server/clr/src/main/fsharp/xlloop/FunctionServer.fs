@@ -65,8 +65,12 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
                 protocol.Close()
             | RequestException(msg) ->
                 // TODO log
-                protocol.SendString msg
-                protocol.Close()
+                try
+                    protocol.SendString msg
+                with
+                | :? SocketException ->
+                    protocol.Close()
+                | _ -> ()
             | _ ->
                 // TODO log
                 protocol.Close()

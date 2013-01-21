@@ -138,29 +138,29 @@ module FromXLOperTests =
     [<Fact>]
     let toXLArrayInt1DTest() =
         let op = XLArray({ Rows = 2; Columns = 1; Data = [| XLInt(1); XLInt(2) |] })
-        let value = fromXLOper (typeof<int array>) op :?> obj array
-        Assert.Equal<obj array>([| box 1; box 2 |], value)
+        let value = fromXLOper (typeof<int array>) op :?> int array
+        Assert.Equal<int array>([| 1; 2 |], value)
 
     [<Fact>]
     let toXLArrayIntToDouble1DTest() =
         let op = XLArray({ Rows = 2; Columns = 1; Data = [| XLInt(1); XLInt(2) |] })
-        let value = fromXLOper (typeof<double array>) op :?> obj array
-        Assert.Equal<obj array>([| box 1.0; box 2.0 |], value)
+        let value = fromXLOper (typeof<double array>) op :?> double array
+        Assert.Equal<double array>([| 1.0; 2.0 |], value)
 
     [<Fact>]
     let toXLArrayInt2DTest() =
         let op = XLArray({ Rows = 2; Columns = 2; Data = [| XLInt(1); XLInt(2); XLInt(3); XLInt(4) |] })
-        let value = fromXLOper (typeof<int[,]>) op :?> obj[,]
-        Assert.Equal<obj[,]>(array2D [[ box 1; box 2 ]; [ box 3; box 4 ]], value)
+        let value = fromXLOper (typeof<int[,]>) op :?> int[,]
+        Assert.Equal<int[,]>(array2D [[ 1; 2 ]; [ 3; 4 ]], value)
 
     [<Fact>]
     let toXLArrayInt2DJaggedTest() =
         let op = XLArray({ Rows = 2; Columns = 2; Data = [| XLInt(1); XLInt(2); XLInt(3); XLInt(4) |] })
-        let value = fromXLOper (typeof<int array array>) op :?> obj array array
-        Assert.Equal<obj array array>([| [| box 1; box 2 |]; [| box 3; box 4 |] |], value)
+        let value = fromXLOper (typeof<int array array>) op :?> int array array
+        Assert.Equal<int array array>([| [| 1; 2 |]; [| 3; 4 |] |], value)
 
     [<Fact>]
     let toXLArrayIntListTest() =
         let op = XLArray({ Rows = 2; Columns = 1; Data = [| XLInt(1); XLInt(2) |] })
-        let value = fromXLOper (typeof<int list>) op :?> obj list
-        Assert.Equal<obj list>([ box 1; box 2 ], value)
+        let value = fromXLOper (typeof<int list>) op :?> int list
+        Assert.Equal<int list>([ 1; 2 ], value)
