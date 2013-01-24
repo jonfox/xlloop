@@ -43,7 +43,7 @@ module BinaryCodec =
         if intType = -1 then raise (EndOfStreamException())
         let xlOperType = enum<XLOperType>(intType)
         match xlOperType with
-        | XLOperType.xlTypeNum -> XLNum(BitConverter.Int64BitsToDouble (int64(readDoubleWord br) <<< 32 ||| int64(readDoubleWord br)))
+        | XLOperType.xlTypeNum -> XLNum(BitConverter.ToDouble(br.ReadBytes(8) |> Array.rev, 0))
         | XLOperType.xlTypeStr ->
             let length = int(br.ReadByte())
             if length = -1 then raise (EndOfStreamException())

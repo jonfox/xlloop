@@ -16,7 +16,6 @@ module List =
 module Array =
     let array2DToJagged (arr: 'a[,]) = [| for i in 0 .. (arr |> Array2D.length1) - 1 -> [| for j in 0 .. (arr |> Array2D.length2) - 1 -> arr.[i, j] |] |]
         
-
     let flatten (arr: 'a[,]) = [| for i in 0 .. (arr |> Array2D.length1) - 1 do for j in 0 .. (arr |> Array2D.length2) - 1 -> arr.[i, j] |]
 
     let flattenJagged (defaultValue: 'a)(arr: 'a array array) =

@@ -170,13 +170,13 @@ module XLOperOps =
     let xlArrayToArray2D (xlArray: XLArrayType) =
         array2D [ for i in 0 .. xlArray.Rows - 1 -> [ for j in 0 .. xlArray.Columns - 1 -> xlArray.Data.[i * xlArray.Columns + j] ] ]
 
-    let array2DToObj (isVector: bool)(collectionType: CollectionType)(arr: 'a[,]) =
+    let array2DToObj (collectionType: CollectionType)(arr: 'a[,]) =
         match collectionType with
         | Array1D -> arr |> Array.flatten :> obj
         | Array2D -> arr :> obj
         | Array2DJagged -> arr |> Array.array2DToJagged :> obj
         | FSharpList -> arr |> Array.flatten |> List.ofArray :> obj
-        | Unknown -> if isVector then arr |> Array.flatten :> obj else arr :> obj
+        | Unknown -> if Array2D.length1 arr = 1 || Array2D.length2 arr = 1 then arr |> Array.flatten :> obj else arr :> obj
 
     let rec fromXLOperBase (hint: Type)(op: XLOper) =
         if hint = typeof<XLOper> then
@@ -210,15 +210,14 @@ module XLOperOps =
                 if arr.Rows = 0 || arr.Columns = 0 then
                     null
                 else
-                    let isVector = arr.Rows = 1 || arr.Columns = 1
                     let (collectionType, elementType) = Types.decomposeCollectionType hint
                     let nativeArray = xlArrayToArray2D arr 
                     match elementType.FullName with
-                    | "System.Boolean" -> nativeArray |> Array2D.map (fun el -> fromXLOperToBool el) |> array2DToObj isVector collectionType
-                    | "System.Int32"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt el) |> array2DToObj isVector collectionType
-                    | "System.Int64"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt64 el) |> array2DToObj isVector collectionType
-                    | "System.Double"  -> nativeArray |> Array2D.map (fun el -> fromXLOperToDouble el) |> array2DToObj isVector collectionType
-                    | _                -> nativeArray |> Array2D.map (fun el -> fromXLOperBase elementType el) |> array2DToObj isVector collectionType
+                    | "System.Boolean" -> nativeArray |> Array2D.map (fun el -> fromXLOperToBool el) |> array2DToObj collectionType
+                    | "System.Int32"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt el) |> array2DToObj collectionType
+                    | "System.Int64"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt64 el) |> array2DToObj collectionType
+                    | "System.Double"  -> nativeArray |> Array2D.map (fun el -> fromXLOperToDouble el) |> array2DToObj collectionType
+                    | _                -> nativeArray |> Array2D.map (fun el -> fromXLOperBase elementType el) |> array2DToObj collectionType
                        
     let fromXLOper (hint: Type)(op: XLOper) =
         let wrappedOp =

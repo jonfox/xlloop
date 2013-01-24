@@ -11,6 +11,10 @@ type MyClassString(s1: string, s2: string) =
     member this.Concat = s1 + s2
     member this.StringIntBool (s: string)(i: int)(b: bool) = String.Format("{0}:{1}:{2}", s, i, b)
 
+type MyClassDouble() =
+    member this.Id (d: double) = d
+    member this.Square (d: double) = d * d
+
 type MyClassCollections() =
     member this.Sum (arr: double array) = arr |> Array.sum
     member this.Sum2(arr: double[,]) = arr |> Array.array2DToJagged |> Array.map (fun a -> a |> Array.sum) |> Array.sum
@@ -22,9 +26,10 @@ module Main =
     let main args =
         let myClassInt = MyClassInt(1, 2)
         let myClassString = MyClassString("foo", "bar")
+        let myClassDouble = MyClassDouble()
         let myClassCollections = MyClassCollections()
 
-        let rfh = ReflectFunctionHandler("MyClassInt.", myClassInt).AddInstanceMethods("MyClassString.", myClassString).AddInstanceMethods("MyClassCollections.", myClassCollections)
+        let rfh = ReflectFunctionHandler("MyClassInt.", myClassInt).AddInstanceMethods("MyClassString.", myClassString).AddInstanceMethods("MyClassDouble.", myClassDouble).AddInstanceMethods("MyClassCollections.", myClassCollections)
         let fs = FunctionServer(5455, rfh)
         fs.Start()
         printfn "Started server...\nPress enter to terminate"
