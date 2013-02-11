@@ -46,6 +46,8 @@
     <Compile Include="FunctionInformation.fs" />
     <Compile Include="FunctionHeader.fs" />
     <Compile Include="BuiltinHandlers.fs" />
+    <Compile Include="InstanceMethod.fs" />
+    <Compile Include="OverloadedMethod.fs" />
     <Compile Include="ReflectFunctionHandler.fs" />
     <Compile Include="FunctionServer.fs" />
     <Compile Include="Program.fs" />
