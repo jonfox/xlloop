@@ -18,5 +18,5 @@ type OverloadedMethod(methods: InstanceMethod list) =
 
     interface IFunction with
         member this.Name = (firstMethod :> IFunction).Name
-        member this.Execute context args = Some(execute context args |> toXLOper)
+        member this.Execute context args = execute context args
 

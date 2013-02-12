@@ -2,9 +2,8 @@
 
 open Trafigura.XLLoop
 
-open Xunit
-
 module FromXLOperTests =
+    open Xunit
     open XLOperOps
 
     [<Fact>]

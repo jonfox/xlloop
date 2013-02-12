@@ -10,16 +10,16 @@ module BuiltinFunctions =
     let GET_MENU = "org.boris.xlloop.GetMenu"
     let EXEC_COMMAND = "org.boris.xlloop.ExecuteCommand"
 
-type IFunctionHandler =
-    abstract HasFunction: string -> bool
-    abstract Execute: FunctionContext option -> string -> XLOper array -> XLOper option
-and FunctionContext(handler: IFunctionHandler, session: Session, caller: XLSRefType option, sheetName: string option) =
+type FunctionContext(session: Session, caller: XLSRefType option, sheetName: string option) =
     member this.Host = session.Host
     member this.User = session.User
     member this.UserKey = session.Key
     member this.Caller = caller
     member this.SheetName = sheetName
-    //member this.Execute name args = handler.Execute (Some(this)) name args
+
+type IFunctionHandler =
+    abstract HasFunction: string -> bool
+    abstract Execute: FunctionContext option -> string -> XLOper array -> XLOper option
 
 type IFunctionProvider =
     abstract GetFunctions: FunctionInformation list

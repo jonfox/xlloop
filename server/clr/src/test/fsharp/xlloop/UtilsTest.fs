@@ -2,9 +2,8 @@
 
 open Trafigura.XLLoop
 
-open Xunit
-
 module UtilsTests =
+    open Xunit
     open Types
 
     [<Fact>]

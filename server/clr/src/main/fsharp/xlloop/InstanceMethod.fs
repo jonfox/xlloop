@@ -29,15 +29,16 @@ type InstanceMethod(instance: obj, methodBase: MethodBase) =
         match arg.Type with
         | XLOperType.xlTypeBool -> if t = typeof<bool> then 100.0 elif t.IsAssignableFrom(typeof<bool>) then 50.0 else 0.0
         | XLOperType.xlTypeInt -> if t = typeof<int> then 100.0 elif t.IsAssignableFrom(typeof<int>) then 50.0 else 0.0
-        | XLOperType.xlTypeNum -> if t = typeof<double> then 100.0 elif t.IsAssignableFrom(typeof<double>) then 50.0 else 0.0
+        | XLOperType.xlTypeNum -> if t = typeof<double> then 100.0 elif t.IsAssignableFrom(typeof<double>) || t = typeof<single> || t = typeof<int> || t = typeof<int64> then 50.0 else 0.0
         | XLOperType.xlTypeStr -> if t = typeof<string> then 100.0 elif t.IsAssignableFrom(typeof<string>) then 50.0 else 0.0
         | _ -> 0.0
 
     let calcMatchPercent (args: XLOper array)(lastArg: int) =
-        if lastArg >= argTypes.Length then
+        if lastArg < argTypes.Length then
             0.0
         else
-            Array.zip args argTypes |> Array.map (fun (a, t) -> calcArgMatchPercent a t) |> Array.average
+            let parametersMatch = Array.zip (Array.sub args 0 argTypes.Length) argTypes |> Array.map (fun (a, t) -> calcArgMatchPercent a t) |> Array.average
+            parametersMatch * (if lastArg = argTypes.Length then 1.0 else 0.50) // Reward exact length match
 
 
     member this.ParameterNames = argNames

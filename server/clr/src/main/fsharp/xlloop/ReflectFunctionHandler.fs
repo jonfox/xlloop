@@ -4,10 +4,6 @@ open Option
 
 module ReflectionHandlerOps =
     let excelMethodName excelNamespace (instanceMethod: InstanceMethod) = excelNamespace + (instanceMethod :> IFunction).Name
-    
-open ReflectionHandlerOps
-// TODO support object registry, and overloaded methods
-type ReflectFunctionHandler(methods: Map<string, IFunction>, information: Map<string, FunctionInformation>) =
 
     let addMethod (name: string)(instanceMethod: InstanceMethod)(methods: Map<string, IFunction>) =
         let finalMethod =
@@ -18,13 +14,17 @@ type ReflectFunctionHandler(methods: Map<string, IFunction>, information: Map<st
                 match existingMethod.Value with
                 | :? InstanceMethod as im -> OverloadedMethod([instanceMethod; im]) :> IFunction
                 | :? OverloadedMethod as om -> (om.AddMethod instanceMethod) :> IFunction
-                | _ -> failwith "Unknown method class"
+                | _ -> failwith "Unknown method type"
 
         methods |> Map.add name finalMethod
 
-    let addInstanceMethods excelNamespace instance =
-        let updatedMethods = InstanceMethod.GetInstanceMethods instance |> List.fold (fun acc im -> acc |> addMethod (excelMethodName excelNamespace im) im) methods
-        ReflectFunctionHandler(updatedMethods, Map.empty<string, FunctionInformation>)
+    let addInstanceMethods excelNamespace instance methods =
+        InstanceMethod.GetInstanceMethods instance |> List.fold (fun acc im -> acc |> addMethod (excelMethodName excelNamespace im) im) methods
+
+    
+open ReflectionHandlerOps
+// TODO support object registry, and overloaded methods
+type ReflectFunctionHandler(methods: Map<string, IFunction>, information: Map<string, FunctionInformation>) =
 
     let createFunctionInformation (f: IFunction) =
         match f with
@@ -45,11 +45,13 @@ type ReflectFunctionHandler(methods: Map<string, IFunction>, information: Map<st
     new() = ReflectFunctionHandler(Map.empty<string, IFunction>, Map.empty<string, FunctionInformation>)
 
     new(excelNamespace, instance) =
-        let methods = InstanceMethod.GetInstanceMethods instance |> List.map (fun im -> (excelMethodName excelNamespace im, im :> IFunction)) |> Map.ofList
+        let methods = addInstanceMethods excelNamespace instance Map.empty<string, IFunction>
         ReflectFunctionHandler(methods, Map.empty<string, FunctionInformation>)
 
 
-    member this.AddInstanceMethods(excelNamespace, instance) = addInstanceMethods excelNamespace instance
+    member this.AddInstanceMethods(excelNamespace, instance) =
+        let updatedMethods = addInstanceMethods excelNamespace instance methods
+        ReflectFunctionHandler(updatedMethods, Map.empty<string, FunctionInformation>)
 
     interface IFunctionHandler with
         member this.HasFunction name = methods.ContainsKey name
