@@ -1,5 +1,7 @@
 bin
 obj
+Debug
+Release
 packages/
 .nuget/
 *.aps
@@ -8,4 +10,5 @@ packages/
 *.suo
 *.sdf
 *.opensdf
+*.ipch
 /_ReSharper*

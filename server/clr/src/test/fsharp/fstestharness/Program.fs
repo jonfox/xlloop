@@ -1,6 +1,6 @@
-﻿namespace Trafigura.XLLoop
+﻿open System
 
-open System
+open Trafigura.XLLoop
 
 type MyClassInt() =
     member this.Sum (i: int, j: int) = i + j

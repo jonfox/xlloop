@@ -104,5 +104,5 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
 
     new(handler) = FunctionServer(5454, handler)
 
-    member this.Start = start
-    member this.Stop = stop
+    member this.Start() = start()
+    member this.Stop() = stop()
