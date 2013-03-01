@@ -9,4 +9,5 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <stdio.h>
+#include <cliext/list>
 #include <msclr\marshal.h>

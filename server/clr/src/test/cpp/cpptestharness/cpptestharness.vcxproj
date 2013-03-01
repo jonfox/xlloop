@@ -79,6 +79,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MyClassCollections.h" />
     <ClInclude Include="MyClassDouble.h" />
     <ClInclude Include="MyClassInt.h" />
     <ClInclude Include="MyClassString.h" />
@@ -92,6 +93,7 @@
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="cpptestharness.cpp" />
+    <ClCompile Include="MyClassCollections.cpp" />
     <ClCompile Include="MyClassDouble.cpp" />
     <ClCompile Include="MyClassInt.cpp" />
     <ClCompile Include="MyClassString.cpp" />
