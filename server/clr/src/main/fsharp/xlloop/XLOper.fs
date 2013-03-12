@@ -65,8 +65,8 @@ and XLOper =
         | XLString s -> "\"" + String255(s).ToString() + "\""
         | XLArray value ->
             let (rows, columns, arr) = (value.Rows, value.Columns, value.Data)
-            let rowString i = ([(i * columns + 1) .. ((i + 1) * columns - 1)] |> List.fold (fun acc j -> "," + arr.[j].ToString()) ("[" + arr.[i * columns].ToString())) + "]"
-            [0 .. (rows - 1)] |> List.fold (fun acc i -> (rowString i) + "/n") ""
+            let rowString i = ([(i * columns + 1) .. ((i + 1) * columns - 1)] |> List.fold (fun acc j -> acc + ", " + arr.[j].ToString()) ("[" + arr.[i * columns].ToString())) + "]"
+            [0 .. (rows - 1)] |> List.fold (fun acc i -> acc + (rowString i) + ",\n") ""
         | XLSRef value ->
             let cellRef col row = (XLSRefOps.toColumnName col) + (row + 1).ToString()
             if value.RowLast - value.RowFirst > 0 || value.ColLast - value.ColFirst > 0 then
@@ -86,11 +86,13 @@ module XLOperOps =
         | :? single as s -> XLNum(double(s))
         | :? double as d -> XLNum(d)
         | :? bool as b -> XLBool(b)
-        // TODO | :? DateTime as dt -> XLNum()
+        | :? DateTime as dt -> XLNum(dt.ToOADate())
         // TODO | :? obj as o -> support object registry
         | _ -> failwith "Unsupported base value type"
 
     let toXLOperList (f: 'a -> XLOper)(value: 'a list) = XLArray({ Rows = value.Length; Columns = 1; Data = value |> List.map (fun a -> f a) |> Array.ofList })
+
+    let toXLOperTupleList (f: 'a -> XLOper)(value: ('a * 'a) list) = XLArray({ Rows = value.Length ; Columns = 2; Data = value |> List.map (fun t -> [f (fst t); f (snd t)]) |> List.concat |> List.toArray })
 
     let toXLOperArray (f: 'a -> XLOper)(value: 'a array) = XLArray({ Rows = value.Length; Columns = 1; Data = value |> Array.map (fun a -> f a) })
 
@@ -102,29 +104,31 @@ module XLOperOps =
         else
             XLArray({ Rows = value.Length; Columns = value.[0].Length; Data = value |> Array.map (fun r -> r |> Array.map (fun a -> f a)) |> Array.flattenJagged XLNil })
       
-    let toXLOper (value: obj) =
+    let toXLOper (value: obj) =  
         match value with
-        | :? (XLOper list) as l     -> toXLOperList id l
-        | :? (XLOper array) as arr  -> toXLOperArray id arr
-        | :? (XLOper[,]) as arr     -> toXLOper2DArray id arr
-        | :? (XLOper[][]) as arr    -> toXLOper2DJaggedArray id arr
-        | :? (bool list) as l       -> toXLOperList toXLOperBase l
-        | :? (bool array) as arr    -> toXLOperArray toXLOperBase arr
-        | :? (bool[,]) as arr       -> toXLOper2DArray toXLOperBase arr
-        | :? (bool[][]) as arr      -> toXLOper2DJaggedArray toXLOperBase arr
-        | :? (int list) as l        -> toXLOperList toXLOperBase l
-        | :? (int array) as arr     -> toXLOperArray toXLOperBase arr
-        | :? (int[,]) as arr        -> toXLOper2DArray toXLOperBase arr
-        | :? (int[][]) as arr       -> toXLOper2DJaggedArray toXLOperBase arr
-        | :? (double list) as l     -> toXLOperList toXLOperBase l
-        | :? (double array) as arr  -> toXLOperArray toXLOperBase arr
-        | :? (double[,]) as arr     -> toXLOper2DArray toXLOperBase arr
-        | :? (double[][]) as arr    -> toXLOper2DJaggedArray toXLOperBase arr
-        | :? (string list) as l     -> toXLOperList toXLOperBase l
-        | :? (string array) as arr  -> toXLOperArray toXLOperBase arr
-        | :? (string[,]) as arr     -> toXLOper2DArray toXLOperBase arr
-        | :? (string[][]) as arr    -> toXLOper2DJaggedArray toXLOperBase arr
-        | _                         -> toXLOperBase value
+        | :? (XLOper list) as l                 -> toXLOperList id l
+        | :? (XLOper array) as arr              -> toXLOperArray id arr
+        | :? (XLOper[,]) as arr                 -> toXLOper2DArray id arr
+        | :? (XLOper[][]) as arr                -> toXLOper2DJaggedArray id arr
+        | :? (bool list) as l                   -> toXLOperList toXLOperBase l
+        | :? (bool array) as arr                -> toXLOperArray toXLOperBase arr
+        | :? (bool[,]) as arr                   -> toXLOper2DArray toXLOperBase arr
+        | :? (bool[][]) as arr                  -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (int list) as l                    -> toXLOperList toXLOperBase l
+        | :? (int array) as arr                 -> toXLOperArray toXLOperBase arr
+        | :? (int[,]) as arr                    -> toXLOper2DArray toXLOperBase arr
+        | :? (int[][]) as arr                   -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (double list) as l                 -> toXLOperList toXLOperBase l
+        | :? ((double * double) list) as l      -> toXLOperTupleList toXLOperBase l
+        | :? ((DateTime * double) list) as l    -> toXLOperTupleList toXLOperBase (l |> List.map (fun (dt, d) -> (dt.ToOADate(), d)))
+        | :? (double array) as arr              -> toXLOperArray toXLOperBase arr
+        | :? (double[,]) as arr                 -> toXLOper2DArray toXLOperBase arr
+        | :? (double[][]) as arr                -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (string list) as l                 -> toXLOperList toXLOperBase l
+        | :? (string array) as arr              -> toXLOperArray toXLOperBase arr
+        | :? (string[,]) as arr                 -> toXLOper2DArray toXLOperBase arr
+        | :? (string[][]) as arr                -> toXLOper2DJaggedArray toXLOperBase arr
+        | _                                     -> toXLOperBase value
 
 
     // XLOper -> obj
@@ -166,6 +170,14 @@ module XLOperOps =
         | XLInt(i) -> double(i)
         | XLNum(d) -> d
         | _ -> failwith "Can only convert numeric types to double"
+        
+    let fromXLOperToString (op: XLOper): String =
+        match op with
+        | XLString(s) -> s
+        | XLBool(b) -> b.ToString()
+        | XLInt(i) -> i.ToString()
+        | XLNum(d) -> d.ToString()
+        | _ -> failwith "Cannot parse value to string"
 
     let xlArrayToArray2D (xlArray: XLArrayType) =
         array2D [ for i in 0 .. xlArray.Rows - 1 -> [ for j in 0 .. xlArray.Columns - 1 -> xlArray.Data.[i * xlArray.Columns + j] ] ]
@@ -217,6 +229,7 @@ module XLOperOps =
                     | "System.Int32"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt el) |> array2DToObj collectionType
                     | "System.Int64"   -> nativeArray |> Array2D.map (fun el -> fromXLOperToInt64 el) |> array2DToObj collectionType
                     | "System.Double"  -> nativeArray |> Array2D.map (fun el -> fromXLOperToDouble el) |> array2DToObj collectionType
+                    | "System.String"  -> nativeArray |> Array2D.map (fun el -> fromXLOperToString el) |> array2DToObj collectionType
                     | _                -> nativeArray |> Array2D.map (fun el -> fromXLOperBase elementType el) |> array2DToObj collectionType
                        
     let fromXLOper (hint: Type)(op: XLOper) =

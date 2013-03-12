@@ -7,9 +7,13 @@ open System.Net
 open System.Net.Sockets
 open System.Threading
 
+open log4net
+
 open Option
 
 type FunctionServer(port: int, provider: IFunctionProvider) =
+    
+    let logger = LogManager.GetLogger("xlloop.FunctionServer")
 
     let handler = CompositeFunctionHandler([ provider.GetHandler; FunctionInformationHandler([], HashSet([ provider ]), None); InitializeHandler() ]) :> IFunctionHandler
 
@@ -43,7 +47,7 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
                     if version = 20 then
                         let context = if protocol.ReceiveBool() then Some(getContext protocol ((!session).Value)) else None
                         let name = protocol.ReceiveString()
-                        (name, context)      
+                        (name, context)
                     else
                         raise (InvalidBinaryProtocolVersion(version))
                 | XLString(name) ->
@@ -60,19 +64,19 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
         with
             | InvalidBinaryProtocolVersion(version) ->
                 let message = String.Format("#Unknown protocol version {0}", version)
-                // TODO log
+                logger.InfoFormat(message)
                 protocol.SendString message
                 protocol.Close()
             | RequestException(msg) ->
-                // TODO log
+                logger.InfoFormat(msg)
                 try
                     protocol.SendString msg
                 with
                 | :? SocketException ->
                     protocol.Close()
                 | _ -> ()
-            | _ ->
-                // TODO log
+            | ex ->
+                logger.InfoFormat("Request failed with error {0} {1}", ex.Message, ex.StackTrace)
                 protocol.Close()
 
 

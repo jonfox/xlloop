@@ -5,6 +5,8 @@ open System.Collections.Generic
 open System.Linq
 open System.Reflection
 
+open log4net
+
 open XLOperOps
 
 type InstanceMethod(excelNamespace: string, instance: obj, methodBase: MethodBase) =
@@ -34,7 +36,7 @@ type InstanceMethod(excelNamespace: string, instance: obj, methodBase: MethodBas
     member this.Type = instance.GetType()
 
     static member GetInstanceMethods excelNamespace instance =
-        [ for m in instance.GetType().GetMethods() do if m.IsPublic && not(m.IsStatic) && m.DeclaringType = instance.GetType() then yield InstanceMethod(excelNamespace, instance, m) ]
+        [ for m in instance.GetType().GetMethods() do if m.IsPublic && m.DeclaringType = instance.GetType() then yield InstanceMethod(excelNamespace, instance, m) ]
 
     interface IFunction with
         member this.Name = methodBase.Name
@@ -44,6 +46,8 @@ open Option
 // TODO support object registry, and overloaded methods
 type ReflectFunctionHandler(methods: Map<string, InstanceMethod>, information: Map<string, FunctionInformation>) =
 
+    let logger = LogManager.GetLogger("xlloop.ReflectFunctionHandler")
+
     let createFunctionInformation (f: IFunction) =
         match f with
         | :? InstanceMethod as im -> FunctionInformation(f.Name, im.ParameterNames, im.ParameterTypeNames)
@@ -52,6 +56,10 @@ type ReflectFunctionHandler(methods: Map<string, InstanceMethod>, information: M
     let getFunctions = methods |> Map.toList |> List.map (fun (name, im) -> information.TryFind name |? createFunctionInformation im)
     
     let execute context name args =
+
+        let argsString = String.concat ", " (args |> Array.map(fun a -> a.ToString()))
+        logger.InfoFormat(name + " (" + argsString + ")")
+
         let f = methods.TryFind name
         if f.IsNone then
             raise (RequestException("#Unkown method {0}" + name))
