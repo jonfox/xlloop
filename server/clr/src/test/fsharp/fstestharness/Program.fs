@@ -1,18 +1,21 @@
-﻿namespace Trafigura.XLLoop
+﻿open System
 
-open System
+open Trafigura.XLLoop
 
-type MyClassInt(i: int, j: int) =
-    member this.Sum = i + j
-    member this.Difference = i - j
-    member this.Product = i * j
+type MyClassInt() =
+    member this.Sum (i: int, j: int) = i + j
+    member this.Sum (i: int, j: int, k: int) = i + j + k
+    member this.Difference (i: int, j: int) = i - j
+    member this.Product (i: int, j: int) = i * j
 
-type MyClassString(s1: string, s2: string) =
-    member this.Concat = s1 + s2
+type MyClassString() =
+    member this.Concat (s1: string, s2: string) = s1 + s2
+    member this.Concat (s1: string, s2: string, s3: string) = s1 + s2 + s3
     member this.StringIntBool (s: string)(i: int)(b: bool) = String.Format("{0}:{1}:{2}", s, i, b)
 
 type MyClassDouble() =
-    member this.Id (d: double) = d
+    member this.Sum (d1: double, d2: double) = d1 + d2
+    member this.Sum (d1: double, d2: double, d3: double) = d1 + d2 + d3
     member this.Square (d: double) = d * d
 
 type MyClassCollections() =
@@ -24,8 +27,8 @@ module Main =
 
     [<EntryPoint>]
     let main args =
-        let myClassInt = MyClassInt(1, 2)
-        let myClassString = MyClassString("foo", "bar")
+        let myClassInt = MyClassInt()
+        let myClassString = MyClassString()
         let myClassDouble = MyClassDouble()
         let myClassCollections = MyClassCollections()
 

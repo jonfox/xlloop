@@ -2,9 +2,8 @@
 
 open Trafigura.XLLoop
 
-open Xunit
-
 module ToXLOperTests =
+    open Xunit
     open XLOperOps
 
     // Basic types

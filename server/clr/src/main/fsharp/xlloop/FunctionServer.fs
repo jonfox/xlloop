@@ -36,7 +36,7 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
         let sheetName = match protocol.Receive() with
             | XLString(s) -> Some(s)
             | _ -> None
-        FunctionContext(handler, session, caller, sheetName)
+        FunctionContext(session, caller, sheetName)
 
     let handleRequest (protocol: BinaryRequestProtocol)(session: Session option ref) =
         try
@@ -56,7 +56,7 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
 
             let args = getArgs protocol
             if (!session).IsNone && name = BuiltinFunctions.INITIALIZE then session := Some(initializeSession args)
-            let context1 = if (!session).IsSome && context.IsNone then Some(FunctionContext(handler, (!session).Value, None, None)) else None
+            let context1 = if (!session).IsSome && context.IsNone then Some(FunctionContext((!session).Value, None, None)) else None
 
             let res = handler.Execute context1 name args |? XLError(XLErrorType.NULL)
             protocol.Send res
@@ -108,5 +108,5 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
 
     new(handler) = FunctionServer(5454, handler)
 
-    member this.Start = start
-    member this.Stop = stop
+    member this.Start() = start()
+    member this.Stop() = stop()
