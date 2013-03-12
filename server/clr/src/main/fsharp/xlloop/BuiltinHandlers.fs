@@ -3,7 +3,7 @@
 open System
 open System.Collections.Generic
 
-open XLKeyValue
+open XLOperOps
 
 
 type InitializeHandler() =
@@ -19,7 +19,7 @@ type FunctionInformationHandler(functions: FunctionInformation list, functionPro
     let toXLOper =
         let allFunctions = functions :: [ for fp in functionProviders -> fp.GetFunctions ] |> List.flatten
         let allFunctionsWithCategory = allFunctions |> List.map (fun fi -> mapCategory fi)
-        [ for fi in allFunctionsWithCategory -> (fi.Name, fi.Encode) ] |> toXLOper
+        [ for fi in allFunctionsWithCategory -> fi.Encode ] |> toXLOper
 
     interface IFunctionHandler with
         member this.HasFunction name = name = BuiltinFunctions.GET_FUNCTIONS

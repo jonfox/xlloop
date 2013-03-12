@@ -33,7 +33,7 @@ module Map =
     let createMap (f: 'a -> 'b)(s: 'a seq) = s |> Seq.map (fun a -> (f a, a)) |> Map.ofSeq
 
 module CSV =
-    let toCSV (l: 'a list) = l |> List.fold (fun acc a -> acc + "," + a.ToString()) ""
+    let toCSV (l: 'a list) = if l.Length = 0 then "" else l.Tail |> List.fold (fun acc a -> acc + "," + a.ToString()) (l.Head.ToString())
 
 module Types =
     type CollectionType =

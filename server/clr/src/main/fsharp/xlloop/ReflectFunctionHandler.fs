@@ -25,18 +25,18 @@ module ReflectionHandlerOps =
 
     
 open ReflectionHandlerOps
-// TODO support object registry, and overloaded methods
+// TODO support object registry
 type ReflectFunctionHandler(methods: Map<string, IFunction>, information: Map<string, FunctionInformation>) =
 
     let logger = LogManager.GetLogger("xlloop.ReflectFunctionHandler")
 
-    let createFunctionInformation (f: IFunction) =
+    let createFunctionInformation (name: string)(f: IFunction) =
         match f with
-        | :? InstanceMethod as im -> FunctionInformation(f.Name, im.ParameterNames, im.ParameterTypeNames)
-        | :? OverloadedMethod as om -> FunctionInformation(f.Name, om.FirstMethod.ParameterNames, om.FirstMethod.ParameterTypeNames)
-        | _ -> FunctionInformation(f.Name)
+        | :? InstanceMethod as im -> FunctionInformation(name, im.ParameterNames, im.ParameterTypeNames)
+        | :? OverloadedMethod as om -> FunctionInformation(name, om.FirstMethod.ParameterNames, om.FirstMethod.ParameterTypeNames)
+        | _ -> FunctionInformation(name)
     
-    let getFunctions = methods |> Map.toList |> List.map (fun (name, im) -> information.TryFind name |? createFunctionInformation im)
+    let getFunctions = methods |> Map.toList |> List.map (fun (name, im) -> information.TryFind name |? createFunctionInformation name im)
     
     let execute context name args =
         let argsString = String.concat ", " (args |> Array.map(fun a -> a.ToString()))
