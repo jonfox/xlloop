@@ -20,8 +20,8 @@ type InstanceMethod(instance: obj, methodBase: MethodBase) =
         with
             | :? ArgumentException as ex -> raise (RequestException(ex.Message))
             | :? MethodAccessException as ex -> raise (RequestException(ex.Message))
-            | :? TargetException as ex -> raise (RequestException(ex.Message))
-            | :? TargetInvocationException as ex -> raise (RequestException(ex.Message))
+            | :? TargetException as ex -> raise (RequestException(ex.InnerException.Message))
+            | :? TargetInvocationException as ex -> raise (RequestException(ex.InnerException.Message))
             | :? InvalidOperationException as ex -> raise (RequestException(ex.Message))
             | _ -> raise (RequestException("#Error invoking method " + methodBase.Name))
 

@@ -88,6 +88,7 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
         let cts = new CancellationTokenSource()
         let listener = new TcpListener(IPAddress.Any, port)
         listener.Start()
+        logger.InfoFormat("Starting XLLoop server on port {0} ...", port)
 
         let rec accept() = async {
                 let! client = asyncAccept listener
@@ -104,7 +105,9 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
         let serverState = { new IDisposable with member d.Dispose() = cts.Cancel(); listener.Stop() }
         ()
 
-    let stop() = if not(serverState = null) then serverState.Dispose()
+    let stop() =
+        logger.InfoFormat("Stopping XLLoop server on port {0} ...", port)
+        if not(serverState = null) then serverState.Dispose()
 
     new(handler) = FunctionServer(5454, handler)
 
