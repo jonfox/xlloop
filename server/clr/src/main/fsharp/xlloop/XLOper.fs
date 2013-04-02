@@ -110,24 +110,30 @@ module XLOperOps =
         | :? (XLOper array) as arr              -> toXLOperArray id arr
         | :? (XLOper[,]) as arr                 -> toXLOper2DArray id arr
         | :? (XLOper[][]) as arr                -> toXLOper2DJaggedArray id arr
+        | :? (XLOper list list) as ll           -> toXLOper2DJaggedArray id (ll |> List.map(fun l -> l |> List.toArray) |> List.toArray)
         | :? (bool list) as l                   -> toXLOperList toXLOperBase l
         | :? (bool array) as arr                -> toXLOperArray toXLOperBase arr
         | :? (bool[,]) as arr                   -> toXLOper2DArray toXLOperBase arr
         | :? (bool[][]) as arr                  -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (bool list list) as ll             -> toXLOper2DJaggedArray toXLOperBase (ll |> List.map(fun l -> l |> List.toArray) |> List.toArray)
         | :? (int list) as l                    -> toXLOperList toXLOperBase l
         | :? (int array) as arr                 -> toXLOperArray toXLOperBase arr
         | :? (int[,]) as arr                    -> toXLOper2DArray toXLOperBase arr
         | :? (int[][]) as arr                   -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (int list list) as ll              -> toXLOper2DJaggedArray toXLOperBase (ll |> List.map(fun l -> l |> List.toArray) |> List.toArray)
         | :? (double list) as l                 -> toXLOperList toXLOperBase l
         | :? ((double * double) list) as l      -> toXLOperTupleList toXLOperBase l
         | :? ((DateTime * double) list) as l    -> toXLOperTupleList toXLOperBase (l |> List.map (fun (dt, d) -> (dt.ToOADate(), d)))
+        | :? (Map<DateTime, double>) as map     -> toXLOperTupleList toXLOperBase (map |> Map.toList |> List.map(fun (dt, d) -> (dt.ToOADate(), d)))
         | :? (double array) as arr              -> toXLOperArray toXLOperBase arr
         | :? (double[,]) as arr                 -> toXLOper2DArray toXLOperBase arr
         | :? (double[][]) as arr                -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (double list list) as ll           -> toXLOper2DJaggedArray toXLOperBase (ll |> List.map(fun l -> l |> List.toArray) |> List.toArray)
         | :? (string list) as l                 -> toXLOperList toXLOperBase l
         | :? (string array) as arr              -> toXLOperArray toXLOperBase arr
         | :? (string[,]) as arr                 -> toXLOper2DArray toXLOperBase arr
         | :? (string[][]) as arr                -> toXLOper2DJaggedArray toXLOperBase arr
+        | :? (string list list) as ll           -> toXLOper2DJaggedArray toXLOperBase (ll |> List.map(fun l -> l |> List.toArray) |> List.toArray)
         | _                                     -> toXLOperBase value
 
 
