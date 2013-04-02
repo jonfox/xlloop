@@ -90,14 +90,19 @@ type FunctionServer(port: int, provider: IFunctionProvider) =
         listener.Start()
         logger.InfoFormat("Starting XLLoop server on port {0} ...", port)
 
-        let rec accept() = async {
-                let! client = asyncAccept listener
+        let handleClient (client: TcpClient) = async {
                 let protocol = BinaryRequestProtocol(client)
                 let session = ref None
                 while client.Connected do
                     handleRequest protocol session
 
+                protocol.Close()
                 client.Close()
+            }            
+
+        let rec accept() = async {
+                let! client = asyncAccept listener
+                Async.Start(handleClient client)
                 return! accept()
             }
 
