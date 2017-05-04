@@ -6,5 +6,6 @@ Release/
 *.suo
 *.sdf
 *.opensdf
+.vs/
 ipch/
 /_ReSharper*
