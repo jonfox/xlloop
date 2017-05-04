@@ -407,34 +407,41 @@ __declspec(dllexport) LPXLOPER WINAPI xlAddInManagerInfo(LPXLOPER xAction)
 	return (LPXLOPER) &xInfo;
 }
 
-LPXLOPER WINAPI FSExecute(int index, const char* name, LPXLOPER v0, LPXLOPER v1, LPXLOPER v2, LPXLOPER v3, LPXLOPER v4, 
-							LPXLOPER v5, LPXLOPER v6, LPXLOPER v7, LPXLOPER v8, LPXLOPER v9, LPXLOPER v10,
-							LPXLOPER v11, LPXLOPER v12, LPXLOPER v13, LPXLOPER v14, LPXLOPER v15, LPXLOPER v16,
-							LPXLOPER v17, LPXLOPER v18, LPXLOPER v19)
+LPXLOPER WINAPI FSExecute(int index, const char* name, LPXLOPER v0, LPXLOPER v1, LPXLOPER v2, LPXLOPER v3, LPXLOPER v4,
+	LPXLOPER v5, LPXLOPER v6, LPXLOPER v7, LPXLOPER v8, LPXLOPER v9, LPXLOPER v10,
+	LPXLOPER v11, LPXLOPER v12, LPXLOPER v13, LPXLOPER v14, LPXLOPER v15, LPXLOPER v16,
+	LPXLOPER v17, LPXLOPER v18, LPXLOPER v19)
 {
-	// Attempt connection
-	if(!InitProtocol(index)) {
-		return g_protocol[index]->getLastError();
-	}
+	int maxConnectionAttempts = 1;
+	LPXLOPER xres;
 
-	// Exec function
-	LPXLOPER xres = g_protocol[index]->execute(name, g_sendCallerInfo, 20, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19);
-
-	// Check for error
-	if(!g_protocol[index]->isConnected()) {
-		if(xres) {
-			XLUtil::FreeContents(xres);
-			delete xres;
+	for (int connectionAttempt = 0; ; connectionAttempt++) {
+		// Attempt connection
+		if (!InitProtocol(index)) {
+			return g_protocol[index]->getLastError();
 		}
-		return g_protocol[index]->getLastError();
-	}
 
-	// Log function call
-	if(g_debugLogging) {
-		XLUtil::LogFunctionCall(g_serverSections[index], name, xres, 20, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19);
-	}
+		// Exec function
+		xres = g_protocol[index]->execute(name, g_sendCallerInfo, 20, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19);
 
-	return xres;
+		// Check for error
+		if (!g_protocol[index]->isConnected()) {
+			if (xres) {
+				XLUtil::FreeContents(xres);
+				delete xres;
+			}
+			if (connectionAttempt >= maxConnectionAttempts)
+				return g_protocol[index]->getLastError();
+		}
+		else {
+			return xres;
+		}
+
+		// Log function call
+		if (g_debugLogging) {
+			XLUtil::LogFunctionCall(g_serverSections[index], name, xres, 20, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18, v19);
+		}
+	}
 }
 
 #define DECLARE_GENERAL_FUNCTION(number) \
